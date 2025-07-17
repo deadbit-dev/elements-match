@@ -117,7 +117,7 @@ public static class Helpers
         float gridBottom = -camera.orthographicSize;
 
         int gridX = Mathf.RoundToInt(localPosition.x / cellSize + centerX);
-        int gridY = Mathf.RoundToInt((localPosition.y - gridBottom) / cellSize);
+        int gridY = Mathf.RoundToInt((localPosition.y - gridBottom - cellSize * 0.5f) / cellSize);
 
         return new Vector2Int(gridX, gridY);
     }

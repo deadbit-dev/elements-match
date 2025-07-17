@@ -18,8 +18,14 @@ public class Entrypoint : MonoBehaviour
         systems.AddSystem(new LoadLevelSystem(Config, Сamera));
         systems.AddSystem(new BackgroundSystem());
         systems.AddSystem(new InitGridSystem());
+
+        systems.AddSystem(new InputSystem());
+
         systems.AddSystem(new SpawnGridSystem());
         systems.AddSystem(new SpawnElementViewSystem());
+
+        systems.AddSystem(new SwapSystem());
+
         systems.AddSystem(new GridAdaptationSystem());
 
         this.world.AddSystemsGroup(0, systems);
