@@ -9,20 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5903c87314dc81c4da44840f10ee0fcb, type: 3}
+  m_Script: {fileID: 11500000, guid: a6df870e57f049a408e419b3f3fc9896, type: 3}
   m_Name: Level 0
   m_EditorClassIdentifier: 
   title: Level 1
+  background: {fileID: 21300000, guid: 59e1aaff25366c8458ce68722486950b, type: 3}
+  maxGridSize: 5
+  screenPadding: 0.2
+  elementSize: 2
+  gridOffset: {x: 0, y: 1.7, z: 0}
   width: 5
   height: 2
-  elements:
-  - {fileID: 11400000, guid: fe20d662fabfa1b46a8f407b281cbdc4, type: 2}
-  - {fileID: 0}
-  - {fileID: 11400000, guid: fe20d662fabfa1b46a8f407b281cbdc4, type: 2}
-  - {fileID: 11400000, guid: 7cc5af4a884363f4e8d16440e4bff14e, type: 2}
-  - {fileID: 11400000, guid: 7cc5af4a884363f4e8d16440e4bff14e, type: 2}
-  - {fileID: 11400000, guid: fe20d662fabfa1b46a8f407b281cbdc4, type: 2}
-  - {fileID: 0}
-  - {fileID: 11400000, guid: 7cc5af4a884363f4e8d16440e4bff14e, type: 2}
-  - {fileID: 0}
-  - {fileID: 0}
+  elementDataBase: {fileID: 11400000, guid: 1dfec68fe72a405438cbe398f75d7382, type: 2}
+  grid: 01000000ffffffff01000000000000000000000001000000ffffffff00000000ffffffffffffffff

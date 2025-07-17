@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf913a077a0cc274489e65363156d6c4, type: 3}
+  m_Script: {fileID: 11500000, guid: 7dd116cf4408f644bba6b0d57843c162, type: 3}
   m_Name: Fire
   m_EditorClassIdentifier: 
   title: Fire
-  color: {r: 1, g: 0.08445278, b: 0, a: 1}
+  color: {r: 1, g: 0, b: 0, a: 1}
   view: {fileID: 725826179995104777, guid: c8a445e5c271235409006345f4fbfa0c, type: 3}

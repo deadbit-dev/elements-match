@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf913a077a0cc274489e65363156d6c4, type: 3}
+  m_Script: {fileID: 11500000, guid: 7dd116cf4408f644bba6b0d57843c162, type: 3}
   m_Name: Water
   m_EditorClassIdentifier: 
   title: Water
-  color: {r: 0, g: 0.7137255, b: 1, a: 1}
+  color: {r: 0, g: 0.7, b: 1, a: 1}
   view: {fileID: 1420316017799898613, guid: 2e5026554ba781148a49f3b25f80bff4, type: 3}
