@@ -55,7 +55,7 @@ public sealed class SpawnElementViewSystem : ISystem
                     ref var viewRefComponent = ref viewRefComponents.Add(elementEntity);
                     viewRefComponent.viewRef = view;
 
-                    Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.cells, elementEntity);
+                    Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.elements, elementEntity);
                     if (position.x == -1 || position.y == -1)
                         break;
 

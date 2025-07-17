@@ -122,13 +122,13 @@ public static class Helpers
         return new Vector2Int(gridX, gridY);
     }
 
-    public static Vector2Int FindElementPositionInGrid(CellData[,] cells, Entity elementEntity)
+    public static Vector2Int FindElementPositionInGrid(Entity?[,] elements, Entity elementEntity)
     {
-        for (int x = 0; x < cells.GetLength(0); x++)
+        for (int x = 0; x < elements.GetLength(0); x++)
         {
-            for (int y = 0; y < cells.GetLength(1); y++)
+            for (int y = 0; y < elements.GetLength(1); y++)
             {
-                if (cells[x, y].elementEntity.CompareTo(elementEntity) == 0)
+                if (elements[x, y].HasValue && elements[x, y].Value.CompareTo(elementEntity) == 0)
                 {
                     return new Vector2Int(x, y);
                 }

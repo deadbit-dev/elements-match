@@ -42,7 +42,7 @@ public sealed class GridAdaptationSystem : ISystem
                 foreach (var gridEntity in this.gridFilter)
                 {
                     ref var gridComponent = ref gridComponents.Get(gridEntity);
-                    Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.cells, elementEntity);
+                    Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.elements, elementEntity);
 
                     if (position.x == -1 || position.y == -1)
                         break;

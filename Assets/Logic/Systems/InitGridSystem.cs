@@ -1,5 +1,6 @@
 ﻿using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
 
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -25,7 +26,8 @@ public sealed class InitGridSystem : ISystem
             var gridEntity = this.World.CreateEntity();
             var gridComponents = this.World.GetStash<GridComponent>();
             ref var gridComponent = ref gridComponents.Add(gridEntity);
-            gridComponent.cells = new CellData[levelComponent.width, levelComponent.height];
+            gridComponent.elements = new Entity?[levelComponent.width, levelComponent.height];
+            gridComponent.state = new bool[levelComponent.width, levelComponent.height];
 
             for (int y = 0; y < levelComponent.height; y++)
             {
@@ -41,8 +43,8 @@ public sealed class InitGridSystem : ISystem
                     ref var elementComponent = ref elementComponents.Add(elementEntity);
                     elementComponent.type = elementType;
 
-                    gridComponent.cells[x, y].is_busy = false;
-                    gridComponent.cells[x, y].elementEntity = elementEntity;
+                    gridComponent.state[x, y] = false;
+                    gridComponent.elements[x, y] = elementEntity;
                 }
             }
         }
