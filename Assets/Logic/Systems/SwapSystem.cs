@@ -10,47 +10,67 @@ public sealed class SwapSystem : ISystem
     public World World { get; set; }
 
     private Event<SwapEvent> swapElementsEvent;
+
     private Filter gridFilter;
     private Stash<GridComponent> gridComponents;
+
+    private Filter levelFilter;
+    private Stash<LevelComponent> levelComponents;
+
+    private Filter elementFilter;
+    private Stash<ViewRefComponent> viewRefComponents;
+
+    private Request<SwapTweenCompleteRequest> swapTweenCompleteRequest;
 
     public void OnAwake()
     {
         swapElementsEvent = World.GetEvent<SwapEvent>();
         gridFilter = World.Filter.With<GridComponent>().Build();
         gridComponents = World.GetStash<GridComponent>();
+
+        levelFilter = World.Filter.With<LevelComponent>().Build();
+        levelComponents = World.GetStash<LevelComponent>();
+
+        elementFilter = World.Filter.With<ElementComponent>().With<ViewRefComponent>().Without<TweenComponent>().Build();
+        viewRefComponents = World.GetStash<ViewRefComponent>();
+
+        swapTweenCompleteRequest = World.GetRequest<SwapTweenCompleteRequest>();
     }
 
     public void OnUpdate(float deltaTime)
+    {
+        ProcessSwapEvent();
+        ProcessSwapTweenCompleteRequest();
+    }
+
+    private void ProcessSwapEvent()
     {
         foreach (var eventData in swapElementsEvent.publishedChanges)
         {
             Debug.Log($"Swap event: from {eventData.from} to {eventData.to}");
 
             if (IsValidSwap(eventData.from, eventData.to))
-            {
-                Debug.Log("Swap is valid - can proceed with swap logic");
-            }
-            else
-            {
-                Debug.Log("Swap is invalid - ignoring swap request");
-            }
+                Swap(eventData.from, eventData.to);
         }
     }
 
     private bool IsValidSwap(Vector2Int from, Vector2Int to)
     {
+        if (gridFilter.IsEmpty())
+            return false;
+
         var gridEntity = gridFilter.First();
         ref var gridComponent = ref gridComponents.Get(gridEntity);
 
-        if (!IsWithinGridBounds(from, gridComponent.elements) || !IsWithinGridBounds(to, gridComponent.elements))
+        if (!Helpers.IsWithinGridBounds(from, gridComponent.elements) || !Helpers.IsWithinGridBounds(to, gridComponent.elements))
         {
-            Debug.Log($"Position out of grid bounds: from={from}, to={to}");
+            Debug.LogWarning($"Position out of grid bounds: from={from}, to={to}");
             return false;
         }
 
         if (!IsAdjacentSwap(from, to))
         {
-            Debug.Log($"Swap is not adjacent: from={from}, to={to}");
+            Debug.LogWarning($"Swap is not adjacent: from={from}, to={to}");
             return false;
         }
 
@@ -61,30 +81,20 @@ public sealed class SwapSystem : ISystem
         }
 
         Vector2Int swapDirection = to - from;
-        if (swapDirection == Vector2Int.up)
+
+        if (!HasElement(gridComponent.elements[from.x, from.y]))
         {
-            if (!HasElement(gridComponent.elements[from.x, from.y]) || !HasElement(gridComponent.elements[to.x, to.y]))
-            {
-                Debug.Log($"Cannot swap up: one or both cells don't have elements: from hasElement={HasElement(gridComponent.elements[from.x, from.y])}, to hasElement={HasElement(gridComponent.elements[to.x, to.y])}");
-                return false;
-            }
+            Debug.LogWarning($"Cannot swap: source cell doesn't have element: from hasElement={HasElement(gridComponent.elements[from.x, from.y])}");
+            return false;
         }
-        else
+
+        if (swapDirection == Vector2Int.up && !HasElement(gridComponent.elements[to.x, to.y]))
         {
-            if (!HasElement(gridComponent.elements[from.x, from.y]))
-            {
-                Debug.Log($"Cannot swap: source cell doesn't have element: from hasElement={HasElement(gridComponent.elements[from.x, from.y])}");
-                return false;
-            }
+            Debug.LogWarning($"Cannot swap up to empty cell: to hasElement={HasElement(gridComponent.elements[to.x, to.y])}");
+            return false;
         }
 
         return true;
-    }
-
-    private bool IsWithinGridBounds(Vector2Int position, Entity?[,] elements)
-    {
-        return position.x >= 0 && position.x < elements.GetLength(0) &&
-               position.y >= 0 && position.y < elements.GetLength(1);
     }
 
     private bool IsAdjacentSwap(Vector2Int from, Vector2Int to)
@@ -100,6 +110,63 @@ public sealed class SwapSystem : ISystem
     private bool HasElement(Entity? elementEntity)
     {
         return elementEntity != null;
+    }
+
+    private void Swap(Vector2Int from, Vector2Int to)
+    {
+        if (levelFilter.IsEmpty() || gridFilter.IsEmpty())
+            return;
+
+        var levelEntity = levelFilter.First();
+        ref var levelComponent = ref levelComponents.Get(levelEntity);
+
+        var gridEntity = gridFilter.First();
+        ref var gridComponent = ref gridComponents.Get(gridEntity);
+
+        Entity? fromElement = gridComponent.elements[from.x, from.y];
+        Entity? toElement = gridComponent.elements[to.x, to.y];
+
+        gridComponent.elements[from.x, from.y] = toElement;
+        gridComponent.elements[to.x, to.y] = fromElement;
+
+        Helpers.EmmitGridSaveRequest(World);
+
+        if (fromElement.HasValue)
+        {
+            gridComponent.state[to.x, to.y] = true;
+            Helpers.TweenElement(World, levelComponent, gridEntity, fromElement.Value, from, to, levelComponent.swapEasing, levelComponent.swapDuration, () =>
+            {
+                World.GetRequest<SwapTweenCompleteRequest>().Publish(new SwapTweenCompleteRequest
+                {
+                    gridEntity = gridEntity,
+                    elementEntity = fromElement.Value,
+                    pos = to,
+                }, true);
+            });
+        }
+
+        if (toElement.HasValue)
+        {
+            gridComponent.state[from.x, from.y] = true;
+            Helpers.TweenElement(World, levelComponent, gridEntity, toElement.Value, to, from, levelComponent.swapEasing, levelComponent.swapDuration, () =>
+            {
+                World.GetRequest<SwapTweenCompleteRequest>().Publish(new SwapTweenCompleteRequest
+                {
+                    gridEntity = gridEntity,
+                    elementEntity = toElement.Value,
+                    pos = from,
+                }, true);
+            });
+        }
+    }
+
+    private void ProcessSwapTweenCompleteRequest()
+    {
+        foreach (var request in swapTweenCompleteRequest.Consume())
+        {
+            ref var gridComponent = ref gridComponents.Get(request.gridEntity);
+            gridComponent.state[request.pos.x, request.pos.y] = false;
+        }
     }
 
     public void Dispose() { }

@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   title: Fire
   color: {r: 1, g: 0, b: 0, a: 1}
-  view: {fileID: 725826179995104777, guid: c8a445e5c271235409006345f4fbfa0c, type: 3}
+  prefab: {fileID: 725826179995104777, guid: c8a445e5c271235409006345f4fbfa0c, type: 3}

@@ -5,7 +5,7 @@ using UnityEngine;
 [Il2CppSetOption(Option.NullChecks, false)]
 [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 [Il2CppSetOption(Option.DivideByZeroChecks, false)]
-public sealed class BackgroundSystem : ISystem
+public sealed class SpawnBackgroundSystem : ISystem
 {
     public World World { get; set; }
 
@@ -13,18 +13,18 @@ public sealed class BackgroundSystem : ISystem
 
     public void OnAwake()
     {
-        loadedLevelEvent = this.World.GetEvent<LoadedLevelEvent>();
+        loadedLevelEvent = World.GetEvent<LoadedLevelEvent>();
     }
 
     public void OnUpdate(float deltaTime)
     {
         foreach (var eventData in loadedLevelEvent.publishedChanges)
         {
-            var levelComponents = this.World.GetStash<LevelComponent>();
+            var levelComponents = World.GetStash<LevelComponent>();
             ref var levelComponent = ref levelComponents.Get(eventData.levelEntity);
 
             var backgroundGameObject = new GameObject(levelComponent.background.name);
-            backgroundGameObject.transform.localScale = new Vector3(0.45f, 0.45f, 1);
+            backgroundGameObject.transform.localScale = levelComponent.backgroundScale;
             var spriteRenderer = backgroundGameObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = levelComponent.background;
             spriteRenderer.sortingOrder = -1;

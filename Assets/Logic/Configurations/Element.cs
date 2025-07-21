@@ -6,5 +6,5 @@ public class Element : ScriptableObject
     public string title;
     public Color color = new Color(1, 1, 1, 1);
 
-    public GameObject view;
+    public GameObject prefab;
 }

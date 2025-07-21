@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f89ecb0fcbdcf944b224ab420ec8467, type: 3}
+  m_Name: BalloonsPreset
+  m_EditorClassIdentifier: 
+  maxOnScreen: 3
+  spawnInterval: 2
+  spawnOffsetFromSide: 1
+  spawnOffsetFromBottom: 5
+  spawnHeightPercentage: 0.6
+  targetOffsetFromSide: 1
+  targetOffsetFromTop: 1
+  targetHeightPercentage: 0.4
+  balloons:
+  - {fileID: 11400000, guid: 0ca3ad48122c12d4dbc0098fbc130ea4, type: 2}
+  - {fileID: 11400000, guid: eafac940838b75248b63ed912f8b91d7, type: 2}

@@ -42,15 +42,7 @@ public sealed class InputSystem : ISystem
                 Vector3 worldPosition = levelComponent.camera.ScreenToWorldPoint(mousePosition);
                 worldPosition.z = 0;
 
-                Vector2Int gridPosition = Helpers.WorldToGridPosition(
-                    worldPosition,
-                    levelComponent.width,
-                    levelComponent.height,
-                    levelComponent.camera,
-                    levelComponent.gridOffset,
-                    levelComponent.screenPadding,
-                    levelComponent.maxGridSize
-                );
+                Vector2Int gridPosition = Helpers.WorldToGridPosition(worldPosition, levelComponent);
 
                 bool inputCondition = gridPosition.x >= 0 && gridPosition.x < levelComponent.width &&
                     gridPosition.y >= 0 && gridPosition.y < levelComponent.height;
@@ -71,36 +63,20 @@ public sealed class InputSystem : ISystem
                 Vector3 worldPosition = levelComponent.camera.ScreenToWorldPoint(mousePosition);
                 worldPosition.z = 0;
 
-                Vector2Int gridPosition = Helpers.WorldToGridPosition(
-                    worldPosition,
-                    levelComponent.width,
-                    levelComponent.height,
-                    levelComponent.camera,
-                    levelComponent.gridOffset,
-                    levelComponent.screenPadding,
-                    levelComponent.maxGridSize
-                );
-
-                bool inputCondition = gridPosition.x >= 0 && gridPosition.x < levelComponent.width &&
-                    gridPosition.y >= 0 && gridPosition.y < levelComponent.height;
-                if (!inputCondition)
-                {
-                    inputState.isDown = false;
-                    continue;
-                }
+                Vector2Int gridPosition = Helpers.WorldToGridPosition(worldPosition, levelComponent);
 
                 Vector2Int firstPosition = inputState.position;
-
-                if (firstPosition != gridPosition)
+                Vector2Int direction = DetermineSwipeDirection(firstPosition, gridPosition);
+                if (IsValidDirection(direction))
                 {
-                    bool isAdjacent = Mathf.Abs(gridPosition.x - firstPosition.x) + Mathf.Abs(gridPosition.y - firstPosition.y) == 1;
-
-                    if (isAdjacent)
+                    Vector2Int neighborPosition = firstPosition + direction;
+                    if (neighborPosition.x >= 0 && neighborPosition.x < levelComponent.width &&
+                        neighborPosition.y >= 0 && neighborPosition.y < levelComponent.height)
                     {
                         swapElementsEvent.NextFrame(new SwapEvent
                         {
                             from = firstPosition,
-                            to = gridPosition
+                            to = neighborPosition
                         });
                     }
                 }
@@ -108,6 +84,23 @@ public sealed class InputSystem : ISystem
                 inputState.isDown = false;
             }
         }
+    }
+
+    private Vector2Int DetermineSwipeDirection(Vector2Int from, Vector2Int to)
+    {
+        Vector2Int delta = to - from;
+        if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+            return new Vector2Int(delta.x > 0 ? 1 : -1, 0);
+        else
+            return new Vector2Int(0, delta.y > 0 ? 1 : -1);
+    }
+
+    private bool IsValidDirection(Vector2Int direction)
+    {
+        return (direction == Vector2Int.up) ||
+               (direction == Vector2Int.down) ||
+               (direction == Vector2Int.left) ||
+               (direction == Vector2Int.right);
     }
 
     public void Dispose() { }

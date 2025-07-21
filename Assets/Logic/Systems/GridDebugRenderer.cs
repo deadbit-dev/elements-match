@@ -12,6 +12,9 @@ public class GridDebugRenderer : MonoBehaviour
 
     private void Start()
     {
+        if (World.Default == null)
+            return;
+
         var world = World.Default;
         levelFilter = world.Filter.With<LevelComponent>().Build();
         levelComponents = world.GetStash<LevelComponent>();
@@ -25,46 +28,45 @@ public class GridDebugRenderer : MonoBehaviour
         foreach (var levelEntity in levelFilter)
         {
             ref var levelComponent = ref levelComponents.Get(levelEntity);
-            DrawGridLines(
-                levelComponent.width,
-                levelComponent.height,
-                levelComponent.gridOffset,
-                levelComponent.screenPadding,
-                levelComponent.maxGridSize,
-                Camera.main
-            );
+            DrawGridLines(levelComponent, Camera.main);
         }
     }
 
-    private void DrawGridLines(int gridWidth, int gridHeight, Vector3 gridOffset, float screenPadding, float maxGridSize, Camera camera)
+    private void DrawGridLines(LevelComponent levelComponent, Camera camera)
     {
         if (camera == null) return;
 
-        var (cellSize, totalGridWidth, totalGridHeight, gridLeft, gridBottom) = Helpers.CalculateGridBounds(gridWidth, gridHeight, camera, screenPadding, maxGridSize);
+        var adaptedCellSize = Helpers.CalculateAdaptGridCellSize(levelComponent);
+        var gridBounds = Helpers.CalculateGridBounds(levelComponent, adaptedCellSize);
+
+        var totalGridWidth = gridBounds.totalGridWidth;
+        var totalGridHeight = gridBounds.totalGridHeight;
+        var gridLeft = gridBounds.gridLeft;
+        var gridBottom = gridBounds.gridBottom;
 
         Gizmos.color = gridLineColor;
 
-        for (int x = 0; x <= gridWidth; x++)
+        for (int x = 0; x <= levelComponent.width; x++)
         {
-            float xPos = gridLeft + x * cellSize;
-            Vector3 start = new Vector3(xPos, gridBottom, 0) + gridOffset;
-            Vector3 end = new Vector3(xPos, gridBottom + totalGridHeight, 0) + gridOffset;
+            float xPos = gridLeft + x * adaptedCellSize;
+            Vector3 start = new Vector3(xPos, gridBottom, 0) + levelComponent.gridOffset;
+            Vector3 end = new Vector3(xPos, gridBottom + totalGridHeight, 0) + levelComponent.gridOffset;
             Gizmos.DrawLine(start, end);
         }
 
-        for (int y = 0; y <= gridHeight; y++)
+        for (int y = 0; y <= levelComponent.height; y++)
         {
-            float yPos = gridBottom + y * cellSize;
-            Vector3 start = new Vector3(gridLeft, yPos, 0) + gridOffset;
-            Vector3 end = new Vector3(gridLeft + totalGridWidth, yPos, 0) + gridOffset;
+            float yPos = gridBottom + y * adaptedCellSize;
+            Vector3 start = new Vector3(gridLeft, yPos, 0) + levelComponent.gridOffset;
+            Vector3 end = new Vector3(gridLeft + totalGridWidth, yPos, 0) + levelComponent.gridOffset;
             Gizmos.DrawLine(start, end);
         }
 
         Gizmos.color = Color.red;
-        Vector3 gridTopLeft = new Vector3(gridLeft, gridBottom + totalGridHeight, 0) + gridOffset;
-        Vector3 gridTopRight = new Vector3(gridLeft + totalGridWidth, gridBottom + totalGridHeight, 0) + gridOffset;
-        Vector3 gridBottomLeft = new Vector3(gridLeft, gridBottom, 0) + gridOffset;
-        Vector3 gridBottomRight = new Vector3(gridLeft + totalGridWidth, gridBottom, 0) + gridOffset;
+        Vector3 gridTopLeft = new Vector3(gridLeft, gridBottom + totalGridHeight, 0) + levelComponent.gridOffset;
+        Vector3 gridTopRight = new Vector3(gridLeft + totalGridWidth, gridBottom + totalGridHeight, 0) + levelComponent.gridOffset;
+        Vector3 gridBottomLeft = new Vector3(gridLeft, gridBottom, 0) + levelComponent.gridOffset;
+        Vector3 gridBottomRight = new Vector3(gridLeft + totalGridWidth, gridBottom, 0) + levelComponent.gridOffset;
 
         Gizmos.DrawLine(gridTopLeft, gridTopRight);
         Gizmos.DrawLine(gridTopRight, gridBottomRight);

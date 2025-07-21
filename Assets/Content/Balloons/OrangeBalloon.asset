@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 241bd850819c8344c87fd76dfd0d7585, type: 3}
+  m_Name: OrangeBalloon
+  m_EditorClassIdentifier: 
+  flightDuration: 16
+  flightAmplitude: 2
+  flightFrequency: 1.5
+  z: 2
+  prefab: {fileID: 3110874653972908323, guid: f63c05b0ba1dd924486d95c400cd9d93, type: 3}

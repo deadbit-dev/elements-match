@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   title: Water
   color: {r: 0, g: 0.7, b: 1, a: 1}
-  view: {fileID: 1420316017799898613, guid: 2e5026554ba781148a49f3b25f80bff4, type: 3}
+  prefab: {fileID: 1420316017799898613, guid: 2e5026554ba781148a49f3b25f80bff4, type: 3}

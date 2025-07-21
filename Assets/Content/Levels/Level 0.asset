@@ -14,10 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   title: Level 1
   background: {fileID: 21300000, guid: 59e1aaff25366c8458ce68722486950b, type: 3}
-  maxGridSize: 5
+  backgroundScale: {x: 0.45, y: 0.45, z: 1}
+  balloonsPreset: {fileID: 11400000, guid: 9b4144a788f1d0d49bac33c24a633fa8, type: 2}
+  swapEasing: 6
+  swapDuration: 0.3
+  fallEasing: 8
+  fallDuration: 0.3
   screenPadding: 0.2
-  elementSize: 2
   gridOffset: {x: 0, y: 1.7, z: 0}
+  maxGridSizeInUnits: 5
+  cellSize: 0.5
+  elementSize: 2
   width: 5
   height: 2
   elementDataBase: {fileID: 11400000, guid: 1dfec68fe72a405438cbe398f75d7382, type: 2}

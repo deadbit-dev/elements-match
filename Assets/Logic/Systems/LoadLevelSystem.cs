@@ -30,21 +30,28 @@ public sealed class LoadLevelSystem : ISystem
         foreach (var request in loadLevelRequest.Consume())
         {
             var level = config.levels[request.levelIndex];
-            var levelEntity = this.World.CreateEntity();
-            var levelComponents = this.World.GetStash<LevelComponent>();
+            var levelEntity = World.CreateEntity();
+            var levelComponents = World.GetStash<LevelComponent>();
             ref var levelComponent = ref levelComponents.Add(levelEntity);
             levelComponent.camera = camera;
             levelComponent.background = level.background;
-            levelComponent.width = level.width;
-            levelComponent.height = level.height;
-            levelComponent.grid = level.grid;
-            levelComponent.elementSize = level.elementSize;
-            levelComponent.maxGridSize = level.maxGridSize;
+            levelComponent.backgroundScale = level.backgroundScale;
+            levelComponent.balloonsPreset = level.balloonsPreset;
             levelComponent.screenPadding = level.screenPadding;
             levelComponent.gridOffset = level.gridOffset;
+            levelComponent.maxGridSizeInUnits = level.maxGridSizeInUnits;
+            levelComponent.cellSize = level.cellSize;
+            levelComponent.elementSize = level.elementSize;
+            levelComponent.swapEasing = level.swapEasing;
+            levelComponent.swapDuration = level.swapDuration;
+            levelComponent.fallEasing = level.fallEasing;
+            levelComponent.fallDuration = level.fallDuration;
+            levelComponent.width = level.width;
+            levelComponent.height = level.height;
+            levelComponent.grid = request.gridData ?? level.grid;
             levelComponent.elements = level.elementDataBase.elements;
 
-            var loadedLevelEvent = this.World.GetEvent<LoadedLevelEvent>();
+            var loadedLevelEvent = World.GetEvent<LoadedLevelEvent>();
             loadedLevelEvent.NextFrame(new LoadedLevelEvent
             {
                 levelEntity = levelEntity

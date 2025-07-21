@@ -20,36 +20,37 @@ public sealed class GridAdaptationSystem : ISystem
 
     public void OnAwake()
     {
-        levelFilter = this.World.Filter.With<LevelComponent>().Build();
-        levelComponents = this.World.GetStash<LevelComponent>();
+        levelFilter = World.Filter.With<LevelComponent>().Build();
+        levelComponents = World.GetStash<LevelComponent>();
 
-        gridFilter = this.World.Filter.With<GridComponent>().Build();
-        gridComponents = this.World.GetStash<GridComponent>();
+        gridFilter = World.Filter.With<GridComponent>().Build();
+        gridComponents = World.GetStash<GridComponent>();
 
-        elementFilter = this.World.Filter.With<ElementComponent>().With<ViewRefComponent>().Build();
-        viewRefComponents = this.World.GetStash<ViewRefComponent>();
+        elementFilter = World.Filter.With<ElementComponent>().With<ViewRefComponent>().Without<TweenComponent>().Build();
+        viewRefComponents = World.GetStash<ViewRefComponent>();
     }
 
     public void OnUpdate(float deltaTime)
     {
-        foreach (var levelEntity in this.levelFilter)
+        if (levelFilter.IsEmpty() || gridFilter.IsEmpty())
+            return;
+
+        var levelEntity = levelFilter.First();
+        ref var levelComponent = ref levelComponents.Get(levelEntity);
+
+        var gridEntity = gridFilter.First();
+        ref var gridComponent = ref gridComponents.Get(gridEntity);
+
+        foreach (var elementEntity in elementFilter)
         {
-            ref var levelComponent = ref levelComponents.Get(levelEntity);
-            foreach (var elementEntity in this.elementFilter)
-            {
-                ref var viewRefComponent = ref viewRefComponents.Get(elementEntity);
+            ref var viewRefComponent = ref viewRefComponents.Get(elementEntity);
 
-                foreach (var gridEntity in this.gridFilter)
-                {
-                    ref var gridComponent = ref gridComponents.Get(gridEntity);
-                    Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.elements, elementEntity);
+            Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.elements, elementEntity);
 
-                    if (position.x == -1 || position.y == -1)
-                        break;
+            if (position.x == -1 || position.y == -1)
+                break;
 
-                    Helpers.ApplyElementTransform(viewRefComponent.viewRef.transform, position, levelComponent);
-                }
-            }
+            Helpers.ApplyElementTransform(viewRefComponent.viewRef.transform, position, levelComponent);
         }
     }
 

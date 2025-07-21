@@ -1,5 +1,4 @@
 ﻿using Scellecs.Morpeh;
-using System;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
@@ -13,19 +12,32 @@ public sealed class SpawnGridSystem : ISystem
     private Filter gridFilter;
     private Stash<ViewRefComponent> viewRefComponents;
 
+    private readonly GridDebugRenderer gridDebugRenderer;
+
+    public SpawnGridSystem(GridDebugRenderer gridDebugRenderer)
+    {
+        this.gridDebugRenderer = gridDebugRenderer;
+    }
+
     public void OnAwake()
     {
-        gridFilter = this.World.Filter.With<GridComponent>().Without<ViewRefComponent>().Build();
-        viewRefComponents = this.World.GetStash<ViewRefComponent>();
+        gridFilter = World.Filter.With<GridComponent>().Without<ViewRefComponent>().Build();
+        viewRefComponents = World.GetStash<ViewRefComponent>();
     }
 
     public void OnUpdate(float deltaTime)
     {
-        foreach (var gridEntity in this.gridFilter)
-        {
-            ref var viewRefComponent = ref viewRefComponents.Add(gridEntity);
-            viewRefComponent.viewRef = new GameObject("Grid");
-        }
+        if (gridFilter.IsEmpty())
+            return;
+
+#if UNITY_EDITOR
+        if (gridDebugRenderer != null)
+            GameObject.Instantiate(gridDebugRenderer.gameObject);
+#endif
+
+        var gridEntity = gridFilter.First();
+        ref var viewRefComponent = ref viewRefComponents.Add(gridEntity);
+        viewRefComponent.viewRef = new GameObject("Grid");
     }
 
     public void Dispose() { }

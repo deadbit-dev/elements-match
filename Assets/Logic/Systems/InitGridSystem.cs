@@ -13,18 +13,18 @@ public sealed class InitGridSystem : ISystem
 
     public void OnAwake()
     {
-        loadedLevelEvent = this.World.GetEvent<LoadedLevelEvent>();
+        loadedLevelEvent = World.GetEvent<LoadedLevelEvent>();
     }
 
     public void OnUpdate(float deltaTime)
     {
         foreach (var eventData in loadedLevelEvent.publishedChanges)
         {
-            var levelComponents = this.World.GetStash<LevelComponent>();
+            var levelComponents = World.GetStash<LevelComponent>();
             ref var levelComponent = ref levelComponents.Get(eventData.levelEntity);
 
-            var gridEntity = this.World.CreateEntity();
-            var gridComponents = this.World.GetStash<GridComponent>();
+            var gridEntity = World.CreateEntity();
+            var gridComponents = World.GetStash<GridComponent>();
             ref var gridComponent = ref gridComponents.Add(gridEntity);
             gridComponent.elements = new Entity?[levelComponent.width, levelComponent.height];
             gridComponent.state = new bool[levelComponent.width, levelComponent.height];
@@ -38,8 +38,8 @@ public sealed class InitGridSystem : ISystem
                     if (elementType == -1)
                         continue;
 
-                    var elementEntity = this.World.CreateEntity();
-                    var elementComponents = this.World.GetStash<ElementComponent>();
+                    var elementEntity = World.CreateEntity();
+                    var elementComponents = World.GetStash<ElementComponent>();
                     ref var elementComponent = ref elementComponents.Add(elementEntity);
                     elementComponent.type = elementType;
 
@@ -47,6 +47,8 @@ public sealed class InitGridSystem : ISystem
                     gridComponent.elements[x, y] = elementEntity;
                 }
             }
+
+            Helpers.EmmitGridSaveRequest(World);
         }
     }
 

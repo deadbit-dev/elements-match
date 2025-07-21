@@ -22,46 +22,47 @@ public sealed class SpawnElementViewSystem : ISystem
 
     public void OnAwake()
     {
-        levelFilter = this.World.Filter.With<LevelComponent>().Build();
-        levelComponents = this.World.GetStash<LevelComponent>();
+        levelFilter = World.Filter.With<LevelComponent>().Build();
+        levelComponents = World.GetStash<LevelComponent>();
 
-        gridFilter = this.World.Filter.With<GridComponent>().Build();
-        gridComponents = this.World.GetStash<GridComponent>();
+        gridFilter = World.Filter.With<GridComponent>().Build();
+        gridComponents = World.GetStash<GridComponent>();
 
-        viewRefComponents = this.World.GetStash<ViewRefComponent>();
+        viewRefComponents = World.GetStash<ViewRefComponent>();
 
-        elementFilter = this.World.Filter.With<ElementComponent>().Without<ViewRefComponent>().Build();
-        elementComponents = this.World.GetStash<ElementComponent>();
+        elementFilter = World.Filter.With<ElementComponent>().Without<ViewRefComponent>().Build();
+        elementComponents = World.GetStash<ElementComponent>();
     }
 
     public void OnUpdate(float deltaTime)
     {
-        foreach (var levelEntity in this.levelFilter)
+        if (levelFilter.IsEmpty() || gridFilter.IsEmpty())
+            return;
+
+        var levelEntity = levelFilter.First();
+        ref var levelComponent = ref levelComponents.Get(levelEntity);
+
+        var gridEntity = gridFilter.First();
+        ref var gridComponent = ref gridComponents.Get(gridEntity);
+
+        ref var gridViewRefComponent = ref viewRefComponents.Get(gridEntity);
+
+        foreach (var elementEntity in elementFilter)
         {
-            ref var levelComponent = ref levelComponents.Get(levelEntity);
+            ref var elementComponent = ref elementComponents.Get(elementEntity);
+            var elementData = levelComponent.elements[elementComponent.type];
 
-            foreach (var gridEntity in this.gridFilter)
-            {
-                ref var gridComponent = ref gridComponents.Get(gridEntity);
-                ref var gridViewRefComponent = ref viewRefComponents.Get(gridEntity);
+            GameObject view = GameObject.Instantiate(elementData.prefab, gridViewRefComponent.viewRef.transform);
+            view.GetComponent<ElementView>().SetIdleWithDelay(Random.Range(0f, 3f));
 
-                foreach (var elementEntity in this.elementFilter)
-                {
-                    ref var elementComponent = ref elementComponents.Get(elementEntity);
-                    var elementData = levelComponent.elements[elementComponent.type];
+            ref var viewRefComponent = ref viewRefComponents.Add(elementEntity);
+            viewRefComponent.viewRef = view.gameObject;
 
-                    GameObject view = GameObject.Instantiate(elementData.view, gridViewRefComponent.viewRef.transform);
+            Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.elements, elementEntity);
+            if (position.x == -1 || position.y == -1)
+                break;
 
-                    ref var viewRefComponent = ref viewRefComponents.Add(elementEntity);
-                    viewRefComponent.viewRef = view;
-
-                    Vector2Int position = Helpers.FindElementPositionInGrid(gridComponent.elements, elementEntity);
-                    if (position.x == -1 || position.y == -1)
-                        break;
-
-                    Helpers.ApplyElementTransform(view.transform, position, levelComponent);
-                }
-            }
+            Helpers.ApplyElementTransform(view.transform, position, levelComponent);
         }
     }
 

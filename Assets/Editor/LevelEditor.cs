@@ -1,3 +1,5 @@
+// TODO: сделать отображение не цветом, а спрайтами элементов
+
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -34,13 +36,16 @@ public class LevelEditor : Editor
     private static readonly Color DATABASE_HINT_TEXT_COLOR = Helpers.HexToColor("#777777");
     private static readonly int DATABASE_HINT_FONT_SIZE = 10;
 
-    private int[] gridElementIndices;
+    private int[] grid;
     private List<Element> databaseElements = new List<Element>();
 
     private bool gridInitialized = false;
     private bool databaseNeedsUpdate = true;
 
     private int selectedElementIndex = -1;
+
+    private int previousWidth = -1;
+    private int previousHeight = -1;
 
     private void OnEnable()
     {
@@ -52,7 +57,7 @@ public class LevelEditor : Editor
     {
         Level level = (Level)target;
 
-        DrawDefaultFields();
+        DrawPropertiesExcluding(serializedObject, "m_Script");
 
         HandleObjectSelector();
         GridSizeValidation(level);
@@ -64,19 +69,6 @@ public class LevelEditor : Editor
         DrawClearGridButton(level);
 
         HandleSaveGrid(level);
-    }
-
-    private void DrawDefaultFields()
-    {
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("title"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("background"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("gridOffset"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("screenPadding"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("elementSize"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("maxGridSize"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("width"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("height"));
-        serializedObject.ApplyModifiedProperties();
     }
 
     private void HandleObjectSelector()
@@ -131,8 +123,8 @@ public class LevelEditor : Editor
 
     private bool HasGridSizeChanged(Level level)
     {
-        return !gridInitialized || gridElementIndices == null ||
-            gridElementIndices.Length != level.width * level.height;
+        return !gridInitialized || grid == null ||
+            grid.Length != level.width * level.height;
     }
 
     private void DrawClearGridButton(Level level)
@@ -153,8 +145,11 @@ public class LevelEditor : Editor
 
     private void InitializeGrid(Level level)
     {
-        int[] oldGridElementIndices = gridElementIndices;
-        gridElementIndices = new int[level.width * level.height];
+        int[] oldGrid = grid;
+        grid = new int[level.width * level.height];
+
+        for (int i = 0; i < grid.Length; i++)
+            grid[i] = -1;
 
         if (level.grid == null || level.grid.Length != level.width * level.height)
         {
@@ -165,19 +160,14 @@ public class LevelEditor : Editor
             }
         }
 
-        if (oldGridElementIndices != null && gridInitialized)
-            TransferGridData(oldGridElementIndices, gridElementIndices, level.width, level.height);
+        if (oldGrid != null && gridInitialized)
+            TransferGridData(oldGrid, previousWidth, previousHeight, grid, level.width, level.height);
         else if (level.grid != null && level.grid.Length == level.width * level.height && HasNonDefaultData(level))
             LoadGridFromLevel(level);
-        else
-        {
-            for (int i = 0; i < gridElementIndices.Length; i++)
-            {
-                gridElementIndices[i] = -1;
-            }
-        }
 
         gridInitialized = true;
+        previousWidth = level.width;
+        previousHeight = level.height;
     }
 
     private bool HasNonDefaultData(Level level)
@@ -190,20 +180,28 @@ public class LevelEditor : Editor
         return false;
     }
 
-    private void TransferGridData(int[] oldGrid, int[] newGrid, int newWidth, int newHeight)
+    private void TransferGridData(int[] oldGrid, int oldWidth, int oldHeight, int[] newGrid, int newWidth, int newHeight)
     {
-        int oldSize = oldGrid.Length;
-        int minSize = Mathf.Min(oldSize, newGrid.Length);
-        for (int i = 0; i < minSize; i++)
+        int minWidth = Mathf.Min(oldWidth, newWidth);
+        int minHeight = Mathf.Min(oldHeight, newHeight);
+
+        for (int y = 0; y < minHeight; y++)
         {
-            newGrid[i] = oldGrid[i];
+            for (int x = 0; x < minWidth; x++)
+            {
+                int oldIndex = y * oldWidth + x;
+                int newIndex = y * newWidth + x;
+
+                if (oldIndex < oldGrid.Length && newIndex < newGrid.Length)
+                    newGrid[newIndex] = oldGrid[oldIndex];
+            }
         }
     }
 
     private void LoadGridFromLevel(Level level)
     {
-        for (int i = 0; i < gridElementIndices.Length && i < level.grid.Length; i++)
-            gridElementIndices[i] = level.grid[i];
+        for (int i = 0; i < grid.Length && i < level.grid.Length; i++)
+            grid[i] = level.grid[i];
     }
 
     private void DrawElementDatabase()
@@ -413,7 +411,7 @@ public class LevelEditor : Editor
                 float yPos = gridRect.y + (level.height - 1 - y) * (layout.cellSize + SPACING);
                 Rect cellRect = new Rect(xPos, yPos, layout.cellSize, layout.cellSize);
 
-                Element element = GetElementAtIndex(gridElementIndices[idx], level);
+                Element element = GetElementAtIndex(grid[idx], level);
                 Color cellColor = GetCellColor(element);
                 EditorGUI.DrawRect(cellRect, cellColor);
                 DrawCellBorder(cellRect, Color.white, GRID_CELL_THICKNESS);
@@ -440,11 +438,11 @@ public class LevelEditor : Editor
         if ((Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag) && Event.current.button == 0)
         {
             if (selectedElementIndex == -1)
-                gridElementIndices[idx] = -1;
+                grid[idx] = -1;
             else if (selectedElementIndex >= 0 && selectedElementIndex < databaseElements.Count)
             {
                 var selectedElement = databaseElements[selectedElementIndex];
-                gridElementIndices[idx] = GetElementIndexInDatabase(selectedElement, level);
+                grid[idx] = GetElementIndexInDatabase(selectedElement, level);
             }
             ApplyGridToLevel(level);
             EditorUtility.SetDirty(level);
@@ -454,19 +452,19 @@ public class LevelEditor : Editor
 
     private void ApplyGridToLevel(Level level)
     {
-        if (level.grid == null || level.grid.Length != gridElementIndices.Length)
-            level.grid = new int[gridElementIndices.Length];
-        for (int i = 0; i < gridElementIndices.Length; i++)
+        if (level.grid == null || level.grid.Length != grid.Length)
+            level.grid = new int[grid.Length];
+        for (int i = 0; i < grid.Length; i++)
         {
-            level.grid[i] = gridElementIndices[i];
+            level.grid[i] = grid[i];
         }
     }
 
     private void ClearGrid()
     {
-        if (gridElementIndices == null) return;
-        for (int i = 0; i < gridElementIndices.Length; i++)
-            gridElementIndices[i] = -1;
+        if (grid == null) return;
+        for (int i = 0; i < grid.Length; i++)
+            grid[i] = -1;
     }
 
     private Element GetElementAtIndex(int index, Level level)

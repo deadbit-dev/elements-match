@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 725826179995104791}
   - component: {fileID: 479216341852118624}
   - component: {fileID: 725826179995104790}
+  - component: {fileID: 7692918591400050974}
   m_Layer: 0
   m_Name: FireElementView
   m_TagString: Untagged
@@ -106,3 +107,16 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &7692918591400050974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725826179995104777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe6f7b7b48d41174cb16b17e55e2fa04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 479216341852118624}
